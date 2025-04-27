@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Agendar Turno</title>
+  <link rel="stylesheet" href="../css/agendar-turno.css">
+</head>
+<body>
+<div class="container">
+  <h2>Agendar Turno</h2>
+
+  <label for="fecha">Seleccionar día:</label>
+  <select id="fecha">
+    <option value="">-- Selecciona un día --</option>
+  </select>
+
+  <div id="horariosContainer" style="margin-top: 20px;">
+    <h3>Horarios disponibles</h3>
+    <div id="horarios"></div>
+  </div>
+
+  <div id="serviciosContainer" style="margin-top: 20px;">
+    <h3>Seleccionar servicios</h3>
+    <div id="servicios"></div>
+  </div>
+
+  <button id="confirmarBtn" style="margin-top: 20px;">Confirmar Turno</button>
+
+  <p id="mensaje" style="color: red;"></p>
+</div>
+
+<script>
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert("No estás logueado. Redirigiendo al login...");
+    window.location.href = "login-register.html";
+  }
+
+  let fechaSeleccionada = "";
+  let horarioSeleccionado = null;
+
+  const fechaSelect = document.getElementById("fecha");
+  const horariosDiv = document.getElementById("horarios");
+  const serviciosDiv = document.getElementById("servicios");
+  const confirmarBtn = document.getElementById("confirmarBtn");
+  const mensaje = document.getElementById("mensaje");
+
+  // Cargar días disponibles
+  fetch("http://localhost:8080/date/getDaysAvailable", {
+    headers: { 'Authorization': `Bearer ${token}` }
+  })
+    .then(res => res.json())
+    .then(fechas => {
+      fechas.forEach(f => {
+        const option = document.createElement("option");
+        option.value = f;
+        option.textContent = f;
+        fechaSelect.appendChild(option);
+      });
+    });
+
+  // Al seleccionar fecha → cargar horarios
+  fechaSelect.addEventListener("change", () => {
+    fechaSeleccionada = fechaSelect.value;
+    horariosDiv.innerHTML = "";
+    horarioSeleccionado = null;
+
+    fetch(`http://localhost:8080/date/getHours/${fechaSeleccionada}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(horarios => {
+        horarios.forEach(h => {
+          if (h.state === "AVAILABLE") {
+            const btn = document.createElement("button");
+            btn.textContent = `${h.startTime} - ${h.endTime}`;
+            btn.onclick = () => {
+              horarioSeleccionado = h;
+              Array.from(horariosDiv.children).forEach(b => b.classList.remove("selected"));
+              btn.classList.add("selected");
+            };
+            horariosDiv.appendChild(btn);
+          }
+        });
+      });
+  });
+
+  // Cargar servicios (con token!)
+  fetch("http://localhost:8080/getServices", {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  })
+    .then(res => {
+      if (!res.ok) {
+        // Redirigir si es 403 (opcional)
+        if (res.status === 403) {
+          alert("Tu sesión expiró. Iniciá sesión nuevamente.");
+          window.location.href = "login-register.html";
+        }
+        throw new Error("Error al obtener servicios");
+      }
+      return res.json();
+    })
+    .then(servicios => {
+      if (!Array.isArray(servicios)) {
+        throw new Error("Respuesta de servicios inválida");
+      }
+
+      serviciosDiv.innerHTML = "";
+      servicios.forEach(serv => {
+        const label = document.createElement("label");
+        label.classList.add("servicio");
+        label.innerHTML = `
+          <input type="checkbox" value="${serv.id}"> ${serv.name} ($${serv.price})
+        `;
+        serviciosDiv.appendChild(label);
+      });
+    })
+    .catch(err => {
+      console.error("Error cargando servicios:", err);
+      serviciosDiv.innerHTML = "<p style='color:red;'>No se pudieron cargar los servicios.</p>";
+    });
+
+  // Confirmar turno
+confirmarBtn.addEventListener("click", () => {
+  // Obtener los servicios seleccionados (IDs)
+  const serviciosSeleccionados = Array.from(serviciosDiv.querySelectorAll("input:checked")).map(cb => cb.value);
+
+  // Verificar si se seleccionaron fecha, horario y servicios
+  if (!fechaSeleccionada || !horarioSeleccionado || serviciosSeleccionados.length === 0) {
+    mensaje.textContent = "Debes seleccionar una fecha, un horario y al menos un servicio.";
+    return;
+  }
+
+  mensaje.textContent = ""; // Limpiar el mensaje de error
+
+  // Crear el payload para enviar
+  const payload = {
+    dateId: horarioSeleccionado.id, // ID de la hora seleccionada
+    serviceList: serviciosSeleccionados // Lista de IDs de servicios seleccionados
+  };
+
+  // Realizar la petición POST para reservar el turno
+  fetch("http://localhost:8080/appointment/book", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  })
+    .then(data => {
+      alert("Turno reservado con éxito.");
+      window.location.href = "menu.html";
+
+    })
+    .catch(err => {
+      console.error("Error al reservar el turno:", err);
+      mensaje.textContent = "Hubo un problema al reservar el turno. Intenta de nuevo.";
+    });
+});
+
+</script>
+</body>
+</html>

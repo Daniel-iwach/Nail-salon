@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Login y Registro</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>Registro</h2>
+    <form id="registerForm">
+        <label>Username:</label>
+        <input type="text" name="username" required />
+
+        <label>First Name:</label>
+        <input type="text" name="firstName" required />
+
+        <label>Last Name:</label>
+        <input type="text" name="lastName" required />
+
+        <label>Email:</label>
+        <input type="email" name="email" required />
+
+        <label>Password:</label>
+        <input type="password" name="password" required />
+
+        <button type="submit">Registrar</button>
+    </form>
+
+    <h2>Login</h2>
+    <form id="loginForm">
+        <label>Username:</label>
+        <input type="text" name="username" required />
+
+        <label>Password:</label>
+        <input type="password" name="password" required />
+
+        <button type="submit">Iniciar sesión</button>
+    </form>
+
+    <div class="response" id="response"></div>
+</div>
+
+<script>
+    const registerForm = document.getElementById('registerForm');
+    const loginForm = document.getElementById('loginForm');
+    const responseBox = document.getElementById('response');
+
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(registerForm);
+        const jsonData = {
+            id: null,
+            username: formData.get('username'),
+            firstName: formData.get('firstName'),
+            lastName: formData.get('lastName'),
+            email: formData.get('email'),
+            password: formData.get('password'),
+            rol: null,
+            registrationDate: null
+        };
+
+        try {
+            const res = await fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jsonData)
+            });
+
+            const data = await res.json();
+            responseBox.textContent = JSON.stringify(data, null, 2);
+        } catch (err) {
+            console.error(err);
+            responseBox.textContent = "Error al registrar usuario.";
+        }
+    });
+
+   loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(loginForm);
+    const jsonData = {
+        username: formData.get('username'),
+        password: formData.get('password')
+    };
+
+    try {
+        const res = await fetch('/log-in', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(jsonData)
+        });
+
+        const data = await res.json();
+        responseBox.textContent = JSON.stringify(data, null, 2);
+
+        if (res.ok) {
+            if (data.jwt) {
+                localStorage.setItem('token', data.jwt);
+                console.log("Token guardado:", data.jwt);
+
+                // ✅ Redirección según el rol
+                const roles = data.roles || [];
+                if (roles.includes("ROLE_ADMIN")) {
+                    window.location.href = 'menu-admin.html';
+                } else {
+                    window.location.href = 'menu.html';
+                }
+            } else {
+                console.warn("El backend no devolvió un JWT.");
+                responseBox.textContent = 'No se recibió el token.';
+            }
+        } else {
+            responseBox.textContent = 'Error al iniciar sesión: ' + (data.message || 'Credenciales inválidas');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        responseBox.textContent = 'Error de red o del servidor';
+    }
+});
+
+</script>
+</body>
+</html>

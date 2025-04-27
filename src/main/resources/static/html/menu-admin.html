@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Menú Administrador</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="container">
+  <h2>Menú de Administrador</h2>
+
+  <button onclick="verUsuarios()">Ver todos los usuarios</button>
+  <button onclick="verTurnos()">Ver turnos</button>
+  <button onclick="verDias()">Ver días</button>
+  <button onclick="cerrarSesion()">Cerrar Sesión</button>
+
+  <div class="response" id="respuesta"></div>
+</div>
+
+<script>
+
+  function cerrarSesion() {
+        localStorage.removeItem('token');
+        window.location.href = 'login-register.html';
+    }
+
+  function mostrarRespuesta(texto) {
+    document.getElementById('respuesta').textContent = texto;
+  }
+
+  function verUsuarios() {
+    window.location.href = 'ver-usuarios.html';
+  }
+
+  function verTurnos() {
+     window.location.href = 'ver-turnos-admin.html';
+  }
+
+  function verDias() {
+    window.location.href = 'ver-dias.html';
+  }
+</script>
+</body>
+</html>

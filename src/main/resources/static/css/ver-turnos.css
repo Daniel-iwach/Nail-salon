@@ -1,0 +1,88 @@
+:root {
+  --bg-color: #121a24;
+  --card-bg: #1e293b;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --primary-color: #7c3aed;
+  --primary-hover: #6d28d9;
+  --error-color: #f87171;
+  --error-hover: #dc2626;
+  --table-header: #334155;
+  --table-even-row: #1e293b;
+  --table-hover: #1e40af20;
+  --border-color: #334155;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 900px;
+  margin: 50px auto;
+  background-color: var(--card-bg);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px var(--shadow-color);
+}
+
+h2 {
+  text-align: center;
+  color: var(--primary-color);
+  margin-bottom: 30px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+th, td {
+  text-align: left;
+  padding: 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+th {
+  background-color: var(--table-header);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background-color: var(--table-even-row);
+}
+
+tr:hover {
+  background-color: var(--table-hover);
+  transition: background-color 0.3s;
+}
+
+.error-message {
+  margin-top: 20px;
+  text-align: center;
+  color: var(--error-color);
+  font-weight: bold;
+}
+
+.cancel-btn {
+  background-color: var(--error-color);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.cancel-btn:hover {
+  background-color: var(--error-hover);
+  transform: translateY(-1px);
+}

@@ -1,0 +1,149 @@
+:root {
+  --bg-color: #121212;
+  --card-bg: #1e1e1e;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --primary-color: #bb86fc;
+  --primary-hover: #9b5ff4;
+  --success-color: #69f0ae;
+  --success-hover: #00e676;
+  --input-bg: #2d2d2d;
+  --input-border: #444;
+  --button-bg: #333;
+  --button-hover: #3d3d3d;
+  --selected-bg: #69f0ae;
+  --error-color: #ff6e6e;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg-color);
+  margin: 0;
+  padding: 0;
+  color: var(--text-primary);
+}
+
+.container {
+  max-width: 600px;
+  margin: 40px auto;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  padding: 30px 40px;
+}
+
+h2, h3 {
+  text-align: center;
+  color: var(--primary-color);
+}
+
+label {
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+  color: var(--text-secondary);
+}
+
+select, input[type="checkbox"] {
+  margin-top: 5px;
+  font-size: 15px;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--input-border);
+}
+
+#fecha {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  font-size: 16px;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+}
+
+#horarios button {
+  margin: 5px 8px 5px 0;
+  padding: 10px 16px;
+  background-color: var(--button-bg);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  color: var(--text-primary);
+}
+
+#horarios button:hover {
+  background-color: var(--button-hover);
+  transform: translateY(-2px);
+}
+
+#horarios button.selected {
+  background-color: var(--selected-bg);
+  color: #121212;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(105, 240, 174, 0.3);
+}
+
+label.servicio {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+#confirmarBtn {
+  background-color: var(--primary-color);
+  color: #121212;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  display: block;
+  margin: 30px auto 10px;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+#confirmarBtn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(187, 134, 252, 0.3);
+}
+
+#mensaje {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+  color: var(--error-color);
+  font-weight: bold;
+}
+
+/* Estilos para checkboxes en modo oscuro */
+input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--input-border);
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  vertical-align: middle;
+}
+
+input[type="checkbox"]:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  color: #121212;
+  font-size: 14px;
+  left: 2px;
+  top: -2px;
+  font-weight: bold;
+}

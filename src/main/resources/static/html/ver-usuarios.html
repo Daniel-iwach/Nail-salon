@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ver Usuarios</title>
+  <link rel="stylesheet" href="../css/ver-usuarios.css">
+</head>
+<body>
+<div class="container">
+  <h2>Lista de Usuarios</h2>
+  <table id="usersTable">
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Username</th>
+      <th>Nombre</th>
+      <th>Apellido</th>
+      <th>Email</th>
+      <th>Roles</th>
+      <th>Fecha Registro</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Los usuarios se cargarán acá dinámicamente -->
+    </tbody>
+  </table>
+</div>
+
+<script>
+  async function cargarUsuarios() {
+      const token = localStorage.getItem('token');
+
+      try {
+          const response = await fetch('/user/getAll', {
+              headers: {
+                  'Authorization': 'Bearer ' + token
+              }
+          });
+
+          if (!response.ok) {
+              throw new Error('No autorizado o error del servidor');
+          }
+
+          const usuarios = await response.json();
+          const tbody = document.querySelector('#usersTable tbody');
+          tbody.innerHTML = '';
+
+          usuarios.forEach(usuario => {
+              const row = document.createElement('tr');
+
+              row.innerHTML = `
+                  <td>${usuario.id}</td>
+                  <td>${usuario.username}</td>
+                  <td>${usuario.firstName}</td>
+                  <td>${usuario.lastName}</td>
+                  <td>${usuario.email}</td>
+                  <td>${[...usuario.rol].join(', ')}</td>
+                  <td>${new Date(usuario.registrationDate).toLocaleString('es-AR')}</td>
+              `;
+
+              tbody.appendChild(row);
+          });
+
+      } catch (error) {
+          console.error(error);
+          alert("Error al cargar los usuarios. Verificá que sos admin y que tenés el token guardado.");
+      }
+  }
+
+  // Llamamos a la función al cargar la página
+  window.onload = cargarUsuarios;
+</script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ver Días</title>
+  <link rel="stylesheet" href="../css/ver-dias.css" />
+</head>
+<body>
+<div class="container">
+  <h2>Gestión de Días</h2>
+
+  <div class="filtros">
+    <div class="filtro-group">
+      <label for="mesCargar">Cargar mes (YYYY-MM):</label>
+      <div class="input-button-row">
+        <input type="month" id="mesCargar" />
+        <button onclick="cargarFechasMes()">Cargar</button>
+      </div>
+    </div>
+
+    <div class="filtro-group">
+      <label for="estadoFiltro">Estado:</label>
+      <select id="estadoFiltro" onchange="filtrarPorEstado()">
+        <option value="ALL">Todos</option>
+        <option value="AVAILABLE">AVAILABLE</option>
+        <option value="BUSY">BUSY</option>
+        <option value="CANCELATED">CANCELATED</option>
+      </select>
+    </div>
+
+    <div class="filtro-group">
+      <label for="ordenFecha">Ordenar por fecha:</label>
+      <select id="ordenFecha" onchange="ordenarPorFecha()">
+        <option value="asc">Ascendente</option>
+        <option value="desc">Descendente</option>
+      </select>
+    </div>
+
+    <div class="filtro-group">
+      <label for="fechaBuscar">Buscar por fecha:</label>
+      <div class="input-button-row">
+        <input type="date" id="fechaBuscar" />
+        <button onclick="buscarPorFecha()">Buscar</button>
+      </div>
+    </div>
+
+    <div class="filtro-group filtro-buttons">
+      <button onclick="cargarTodos()">Mostrar Todos</button>
+    </div>
+  </div>
+
+  <table id="daysTable">
+    <thead>
+    <tr>
+      <th>Fecha</th>
+      <th>Inicio</th>
+      <th>Fin</th>
+      <th>Estado</th>
+      <th>Acción</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="alert error" id="errorBox" style="display:none;"></div>
+</div>
+
+<script>
+  let dias = [];
+
+  async function cargarTodos() {
+    try {
+      const res = await fetch('/date/getAll', {
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+      });
+      const data = await res.json();
+      dias = data;
+      aplicarFiltros();
+    } catch (err) {
+      mostrarError("Error al obtener las fechas.");
+    }
+  }
+
+  async function cargarFechasMes() {
+    const mes = document.getElementById('mesCargar').value;
+    if (!mes) return mostrarError("Selecciona un mes válido.");
+
+    try {
+      const res = await fetch(`/date/loadMonth/${mes}`, {
+        method: "POST",
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+      });
+
+      if (res.ok) {
+        await cargarTodos();
+      } else {
+        mostrarError("Error al cargar el mes.");
+      }
+    } catch (err) {
+      mostrarError("Error al conectar con el servidor.");
+    }
+  }
+
+  async function filtrarPorEstado() {
+    const estado = document.getElementById('estadoFiltro').value;
+
+    if (estado === "ALL") {
+      return cargarTodos();
+    }
+
+    try {
+      const res = await fetch(`/date/getByState?state=${estado}`, {
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+      });
+      const data = await res.json();
+      dias = data;
+      aplicarFiltros();
+    } catch (err) {
+      mostrarError("No se encontraron fechas con ese estado.");
+    }
+  }
+
+  async function buscarPorFecha() {
+    const fecha = document.getElementById('fechaBuscar').value;
+    if (!fecha) return mostrarError("Selecciona una fecha válida.");
+
+    try {
+      const res = await fetch(`/date/getByDate/${fecha}`, {
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+      });
+
+      if (!res.ok) throw new Error("No se encontraron resultados para la fecha");
+
+      const data = await res.json();
+      dias = data;
+      aplicarFiltros();
+    } catch (err) {
+      mostrarError("Error al obtener datos de esa fecha.");
+    }
+  }
+
+  function ordenarPorFecha() {
+    aplicarFiltros();
+  }
+
+  function aplicarFiltros() {
+    const orden = document.getElementById('ordenFecha').value;
+    const listaOrdenada = [...dias].sort((a, b) => {
+      const fechaA = new Date(a.date);
+      const fechaB = new Date(b.date);
+      return orden === 'asc' ? fechaA - fechaB : fechaB - fechaA;
+    });
+    renderTabla(listaOrdenada);
+  }
+
+  function renderTabla(lista) {
+    const tbody = document.querySelector("#daysTable tbody");
+    tbody.innerHTML = "";
+
+    lista.forEach(dia => {
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${dia.date}</td>
+        <td>${dia.startTime}</td>
+        <td>${dia.endTime}</td>
+        <td>${dia.state}</td>
+        <td>
+          <select onchange="cambiarEstado('${dia.id}', this.value)">
+            <option value="">Cambiar</option>
+            <option value="AVAILABLE">AVAILABLE</option>
+            <option value="BUSY">BUSY</option>
+            <option value="CANCELED">CANCELED</option>
+          </select>
+        </td>
+      `;
+
+      tbody.appendChild(row);
+    });
+
+    document.getElementById('errorBox').style.display = 'none';
+  }
+
+  async function cambiarEstado(id, nuevoEstado) {
+    if (!nuevoEstado) return;
+
+    try {
+      const res = await fetch(`/date/changeStatusById?dateId=${id}&state=${nuevoEstado}`, {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+      });
+
+      if (res.ok) {
+        cargarTodos();
+      } else {
+        mostrarError("No se pudo cambiar el estado.");
+      }
+    } catch (err) {
+      mostrarError("Error al intentar cambiar el estado.");
+    }
+  }
+
+  function mostrarError(mensaje) {
+    const errorBox = document.getElementById('errorBox');
+    errorBox.textContent = mensaje;
+    errorBox.style.display = 'block';
+  }
+
+  // Al cargar la página
+  cargarTodos();
+</script>
+</body>
+</html>

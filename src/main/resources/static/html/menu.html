@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Menú Principal</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>Menú de Turnos</h2>
+    <div class="menu">
+        <button onclick="window.location.href='ver-turnos.html'">Ver Turnos</button>
+        <button onclick="window.location.href='agendar-turno.html'">Agendar Turno</button>
+        <button onclick="cerrarSesion()">Cerrar Sesión</button>
+    </div>
+</div>
+
+<script>
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert("No estás logueado. Redirigiendo al login...");
+        window.location.href = "login-register.html";
+    }
+
+    function cerrarSesion() {
+        localStorage.removeItem('token');
+        window.location.href = 'login-register.html';
+    }
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ver Turnos</title>
+    <link rel="stylesheet" href="../css/ver-turnos.css">
+    <style>
+        .cancel-btn {
+          background-color: #e74c3c;
+          color: white;
+          border: none;
+          padding: 6px 10px;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: background-color 0.3s;
+        }
+
+        .cancel-btn:hover:enabled {
+          background-color: #c0392b;
+        }
+
+        .cancel-btn:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
+
+        .error-message {
+          color: red;
+          text-align: center;
+          margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Listado de Turnos</h2>
+    <table id="turnosTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Estado</th>
+            <th>Servicios</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <p id="error" class="error-message"></p>
+</div>
+
+<script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("No estás logueado. Redirigiendo al login...");
+      window.location.href = "login-register.html";
+    }
+
+    function cargarTurnos() {
+      fetch('http://localhost:8080/appointment/getAppointments', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(response => {
+          if (!response.ok) throw new Error('Error al obtener los turnos');
+          return response.json();
+        })
+        .then(data => {
+          const tableBody = document.querySelector('#turnosTable tbody');
+          tableBody.innerHTML = '';
+
+          data.forEach(turno => {
+            const row = document.createElement('tr');
+            const estado = turno.state.toUpperCase();
+            const isCanceled = estado === 'CANCELED';
+
+            const cancelButton = `
+              <button
+                class="cancel-btn"
+                data-id="${turno.id}"
+                ${isCanceled ? 'disabled' : ''}
+              >Cancelar</button>
+            `;
+
+            row.innerHTML = `
+              <td>${turno.id}</td>
+              <td>${turno.username}</td>
+              <td>${turno.date}</td>
+              <td>${turno.time}</td>
+              <td>${turno.state}</td>
+              <td>${turno.services.join(', ')}</td>
+              <td>${cancelButton}</td>
+            `;
+
+            tableBody.appendChild(row);
+          });
+
+          // Eventos para cancelar
+          document.querySelectorAll('.cancel-btn:not(:disabled)').forEach(button => {
+            button.addEventListener('click', () => {
+  const id = button.dataset.id;
+  const confirmar = confirm("¿Estás seguro de que querés cancelar este turno?");
+  if (!confirmar) return;
+
+  fetch(`http://localhost:8080/appointment/cancel/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("No se pudo cancelar el turno");
+      return res.text(); // <-- cambio clave aquí
+    })
+    .then(() => {
+      alert("Turno cancelado correctamente");
+      cargarTurnos(); // actualizar la tabla
+    })
+    .catch(err => {
+      console.error(err);
+      alert("No se pudo cancelar el turno");
+    });
+});
+
+          });
+        })
+        .catch(error => {
+          console.error(error);
+          document.getElementById('error').textContent = 'No se pudieron cargar los turnos.';
+        });
+    }
+
+    cargarTurnos();
+</script>
+</body>
+</html>

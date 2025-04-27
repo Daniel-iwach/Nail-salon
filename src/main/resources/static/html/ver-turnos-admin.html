@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ver Turnos</title>
+  <link rel="stylesheet" href="../css/ver-turnos-admin.css">
+</head>
+<body>
+<div class="container">
+  <h2>Listado de Turnos</h2>
+
+  <div class="filtros">
+    <div class="filtro-group">
+      <label for="filterDate">Fecha:</label>
+      <input type="date" id="filterDate">
+    </div>
+
+    <div class="filtro-group">
+      <label for="estadoFiltro">Estado:</label>
+      <select id="estadoFiltro">
+        <option value="ALL">Todos</option>
+        <option value="BUSY">BUSY</option>
+        <option value="CANCELED">CANCELED</option>
+      </select>
+    </div>
+
+    <div class="filtro-group">
+      <label for="ordenFecha">Ordenar por fecha:</label>
+      <select id="ordenFecha">
+        <option value="asc">Ascendente</option>
+        <option value="desc">Descendente</option>
+      </select>
+    </div>
+
+    <div class="filtro-buttons">
+      <button onclick="limpiarFiltros()">Limpiar</button>
+    </div>
+  </div>
+
+  <table id="appointmentsTable">
+    <thead>
+    <tr>
+      <th>Usuario</th>
+      <th>Fecha</th>
+      <th>Hora</th>
+      <th>Estado</th>
+      <th>Servicios</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="alert error" id="errorBox" style="display:none;"></div>
+</div>
+
+<script>
+  let todosLosTurnos = [];
+
+  async function cargarTodos() {
+    try {
+      const res = await fetch('/appointment/getAll', {
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+      });
+      const data = await res.json();
+      todosLosTurnos = data;
+      aplicarFiltros();
+    } catch (err) {
+      mostrarError("Error al obtener los turnos.");
+    }
+  }
+
+  function aplicarFiltros() {
+    const fecha = document.getElementById('filterDate').value;
+    const estado = document.getElementById('estadoFiltro').value;
+    const orden = document.getElementById('ordenFecha').value;
+
+    let filtrados = [...todosLosTurnos];
+
+    if (fecha) {
+      filtrados = filtrados.filter(t => t.date === fecha);
+    }
+
+    if (estado !== 'ALL') {
+      filtrados = filtrados.filter(t => t.state === estado);
+    }
+
+    filtrados.sort((a, b) => {
+      const fA = new Date(a.date);
+      const fB = new Date(b.date);
+      return orden === 'asc' ? fA - fB : fB - fA;
+    });
+
+    renderTabla(filtrados);
+  }
+
+  function renderTabla(lista) {
+    const tbody = document.querySelector("#appointmentsTable tbody");
+    tbody.innerHTML = "";
+
+    if (lista.length === 0) {
+      mostrarError("No se encontraron turnos con esos filtros.");
+      return;
+    }
+
+    document.getElementById('errorBox').style.display = 'none';
+
+    lista.forEach(turno => {
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${turno.username}</td>
+        <td>${turno.date}</td>
+        <td>${turno.time}</td>
+        <td>${turno.state}</td>
+        <td>${turno.services.join(', ')}</td>
+      `;
+
+      tbody.appendChild(row);
+    });
+  }
+
+  function mostrarError(mensaje) {
+    const errorBox = document.getElementById('errorBox');
+    errorBox.textContent = mensaje;
+    errorBox.style.display = 'block';
+  }
+
+  function limpiarFiltros() {
+    document.getElementById('filterDate').value = "";
+    document.getElementById('estadoFiltro').value = "ALL";
+    document.getElementById('ordenFecha').value = "asc";
+    aplicarFiltros();
+  }
+
+  document.getElementById('filterDate').addEventListener('change', aplicarFiltros);
+  document.getElementById('estadoFiltro').addEventListener('change', aplicarFiltros);
+  document.getElementById('ordenFecha').addEventListener('change', aplicarFiltros);
+
+  cargarTodos();
+</script>
+</body>
+</html>
