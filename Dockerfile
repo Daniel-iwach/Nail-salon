@@ -10,8 +10,6 @@ RUN ./mvnw dependency:go-offline
 
 COPY ./src /root/src
 
-RUN ./mvnw clean package -DskipTests
+RUN ./mvnw clean install -DskipTests
 
-RUN mv target/*.jar app.jar
-
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java","-jar","root/target/nailsalon-0.0.1-SNAPSHOT.jar"]
