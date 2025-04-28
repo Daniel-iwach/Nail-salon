@@ -21,6 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -50,6 +52,10 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers("/css/**", "/html/**", "/js/**").permitAll()
                         .anyRequest().authenticated()
+                )
+                .formLogin(form -> form
+                        .loginPage("/html/login-register.html")  // Especifica tu endpoint personalizado
+                        .loginProcessingUrl("/html/login-register.html")
                 )
                 .sessionManagement(sesison->sesison.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class)
