@@ -20,6 +20,9 @@ RUN ./mvnw dependency:go-offline
 #COPIAR EL CODIGO FUENTE
 COPY ./src /root/src
 
+RUN apt-get update && apt-get install -y dos2unix
+RUN dos2unix /root/src/main/resources/application.properties
+
 #CONSTRUIR APLICACION
 RUN ./mvnw clean install -DskipTests
 
