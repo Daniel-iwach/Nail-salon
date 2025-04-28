@@ -21,7 +21,7 @@ RUN ./mvnw dependency:go-offline
 COPY ./src /root/src
 
 #CONSTRUIR APLICACION
-RUN ./mvnw clean install -DskipTests -Dfile.encoding=UTF-8
+RUN ./mvnw clean install -DskipTests
 
 #LEVANTAR NUESTRA APLICACION CUANDO EL CONTENEDOR INICIE
 ENTRYPOINT ["java","-jar","/root/target/nailsalon-0.0.1-SNAPSHOT.jar"]

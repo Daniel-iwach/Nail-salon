@@ -28,9 +28,6 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.resources.encoding>UTF-8</maven.resources.encoding>
-		<resource.delimiter>@</resource.delimiter>
 	</properties>
 	<dependencies>
 
@@ -116,6 +113,14 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version> <!-- O la versión que uses -->
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
