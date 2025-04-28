@@ -59,7 +59,7 @@
     }
 
     function cargarTurnos() {
-      fetch('http://localhost:8080/appointment/getAppointments', {
+      fetch('/appointment/getAppointments', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -106,7 +106,7 @@
   const confirmar = confirm("¿Estás seguro de que querés cancelar este turno?");
   if (!confirmar) return;
 
-  fetch(`http://localhost:8080/appointment/cancel/${id}`, {
+  fetch(`/appointment/cancel/${id}`, {
     method: 'PUT',
     headers: {
       'Authorization': `Bearer ${token}`

@@ -46,7 +46,7 @@
   const mensaje = document.getElementById("mensaje");
 
   // Cargar días disponibles
-  fetch("http://localhost:8080/date/getDaysAvailable", {
+  fetch("/date/getDaysAvailable", {
     headers: { 'Authorization': `Bearer ${token}` }
   })
     .then(res => res.json())
@@ -65,7 +65,7 @@
     horariosDiv.innerHTML = "";
     horarioSeleccionado = null;
 
-    fetch(`http://localhost:8080/date/getHours/${fechaSeleccionada}`, {
+    fetch(`/date/getHours/${fechaSeleccionada}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -86,7 +86,7 @@
   });
 
   // Cargar servicios (con token!)
-  fetch("http://localhost:8080/getServices", {
+  fetch("/getServices", {
     headers: {
       "Authorization": `Bearer ${token}`
     }
@@ -142,7 +142,7 @@ confirmarBtn.addEventListener("click", () => {
   };
 
   // Realizar la petición POST para reservar el turno
-  fetch("http://localhost:8080/appointment/book", {
+  fetch("/appointment/book", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
