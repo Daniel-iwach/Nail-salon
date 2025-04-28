@@ -1,11 +1,17 @@
-# 1. Imagen base de Java 21
-FROM eclipse-temurin:21-jdk
+FROM eclipse-temurin:21.0.3_9-jdk
 
-# 2. Directorio de trabajo
-WORKDIR /app
+WORKDIR /root
 
-# 3. Copiar el jar construido
-COPY target/*.jar app.jar
+COPY ./pom.xml /root
+COPY ./.mvn /root/.mvn
+COPY ./mvnw /root
 
-# 4. Comando para correr la app
-ENTRYPOINT ["java", "-jar", "app.jar"]
+RUN ./mvnw dependency:go-offline
+
+COPY ./src /root/src
+
+RUN ./mvnw clean package -DskipTests
+
+RUN mv target/*.jar app.jar
+
+ENTRYPOINT ["java","-jar","app.jar"]

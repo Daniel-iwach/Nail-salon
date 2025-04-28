@@ -75,7 +75,7 @@ public class AppointmentsServiceImplTest {
 
         String result = service.bookAnAppointment(dateId, services);
 
-        assertTrue(result.contains("appointment saved successfully"));
+        assertTrue(result.contains("Appointment saved successfully"));
         verify(appointmentRepository).save(any(AppointmentDocument.class));
         verify(dateService).changeStatusById(dateId, EState.BUSY);
     }
@@ -176,7 +176,7 @@ public class AppointmentsServiceImplTest {
 
         String result = service.cancelAppointment("id");
 
-        assertEquals("appointment canceled", result);
+        assertEquals("Appointment canceled", result);
         verify(dateService).changeStatusById("date", EState.AVAILABLE);
     }
 
