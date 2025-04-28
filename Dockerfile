@@ -1,27 +1,32 @@
-#IMAGEN MODELO
+# Usamos imagen oficial de Eclipse Temurin (OpenJDK)
 FROM eclipse-temurin:21.0.3_9-jdk
 
+# Puerto expuesto (coincide con tu server.port)
 EXPOSE 8080
 
-#DEFINIR DIRECTORIO RAIZ
-WORKDIR /root
+# Directorio de trabajo
+WORKDIR /app
 
-#COPIAR Y PEGAR ARCHIVOS ENE L CONTENEDOR
-COPY ./pom.xml /root
-COPY ./.mvn /root/.mvn
-COPY ./mvnw /root
+# 1. PRIMERO copiamos solo lo necesario para cachear dependencias
+COPY pom.xml mvnw ./
+COPY .mvn/ .mvn/
 
-#ACCESO A DEPENDENCIAS
-RUN chmod +x ./mvnw
+# 2. Instalamos dependencias y resolvemos problemas DNS
+RUN apt-get update && \
+    apt-get install -y ca-certificates && \
+    update-ca-certificates --fresh && \
+    rm -rf /var/lib/apt/lists/* && \
+    chmod +x mvnw && \
+    ./mvnw dependency:go-offline -B
 
-#DESCARGA DE LAS DEPENDENCIAS
-RUN ./mvnw dependency:go-offline
+# 3. Copiamos el código fuente
+COPY src/ src/
 
-#COPIAR EL CODIGO FUENTE
-COPY ./src /root/src
+# 4. Construcción con parámetros para encoding UTF-8
+RUN ./mvnw clean package -DskipTests \
+    -Dfile.encoding=UTF-8 \
+    -Dproject.build.sourceEncoding=UTF-8
 
-#CONSTRUIR APLICACION
-RUN ./mvnw clean install -DskipTests
-
-#LEVANTAR NUESTRA APLICACION CUANDO EL CONTENEDOR INICIE
-ENTRYPOINT ["java","-jar","/root/target/nailsalon-0.0.1-SNAPSHOT.jar"]
+# 5. Entrypoint optimizado
+# NOTA: reemplaza "nombre-de-tu-app" por el nombre real del jar generado
+ENTRYPOINT ["java", "-jar", "target/nailsalon-0.0.1-SNAPSHOT.jar", "--spring.profiles.active=prod"]
